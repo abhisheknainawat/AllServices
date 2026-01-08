@@ -61,7 +61,10 @@ function App() {
               <Route path="/service/:id" element={<ServiceDetailPage />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/add-service" element={<AddServicePage />} />
+              <Route 
+                path="/add-service" 
+                element={isAuthenticated && userRole === 'provider' ? <AddServicePage /> : <Navigate to="/login" />} 
+              />
               <Route 
                 path="/login" 
                 element={isAuthenticated ? <Navigate to="/" /> : <LoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />} 

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiPlus } from 'react-icons/fi';
+import { createService } from '../services/api';
 
 function AddServicePage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     price: '',
-    priceType: 'hour',
+    priceType: 'fixed',
     description: '',
     images: [],
   });
@@ -28,7 +31,11 @@ function AddServicePage() {
     'painter',
   ];
 
-  const priceTypes = ['hour', 'day', 'month', 'service', 'kg', 'sqft', 'event', 'dozen'];
+  const priceTypes = [
+    { value: 'hourly', label: 'Hourly' },
+    { value: 'daily', label: 'Daily' },
+    { value: 'fixed', label: 'Fixed' }
+  ];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -38,31 +45,50 @@ function AddServicePage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.name || !formData.category || !formData.price || !formData.description) {
-      alert('Please fill in all required fields');
+      setError('Please fill in all required fields');
       return;
     }
 
-    // Demo alert
-    alert(`Service "${formData.name}" has been created successfully! It will appear on the platform once approved by admin.`);
-    
-    // Reset form
-    setFormData({
-      name: '',
-      category: '',
-      price: '',
-      priceType: 'hour',
-      description: '',
-      images: [],
-    });
+    setLoading(true);
+    setError('');
 
-    // Redirect to provider dashboard
-    setTimeout(() => {
-      navigate('/dashboard/provider');
-    }, 1500);
+    try {
+      const response = await createService({
+        name: formData.name,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        priceType: formData.priceType,
+        description: formData.description,
+        images: formData.images,
+      });
+
+      // Success
+      alert(`Service "${formData.name}" has been created successfully!`);
+      
+      // Reset form
+      setFormData({
+        name: '',
+        category: '',
+        price: '',
+        priceType: 'fixed',
+        description: '',
+        images: [],
+      });
+
+      // Redirect to provider dashboard
+      setTimeout(() => {
+        navigate('/dashboard/provider');
+      }, 1500);
+    } catch (err) {
+      console.error('Error creating service:', err);
+      setError(err.response?.data?.message || 'Failed to create service. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -84,6 +110,13 @@ function AddServicePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8 space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800 font-semibold">Error: {error}</p>
+            </div>
+          )}
+
           {/* Service Name */}
           <div>
             <label className="block text-sm font-bold mb-2 text-gray-700">
@@ -155,8 +188,8 @@ function AddServicePage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {priceTypes.map(type => (
-                  <option key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  <option key={type.value} value={type.value}>
+                    {type.label}
                   </option>
                 ))}
               </select>
@@ -196,14 +229,16 @@ function AddServicePage() {
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2"
+              disabled={loading}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2"
             >
-              <FiPlus /> Publish Service
+              <FiPlus /> {loading ? 'Publishing...' : 'Publish Service'}
             </button>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 rounded-lg transition"
+              disabled={loading}
+              className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 font-bold py-3 rounded-lg transition"
             >
               Cancel
             </button>

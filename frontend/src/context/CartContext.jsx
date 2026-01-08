@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { getAllServices } from '../services/api';
 
 export const CartContext = createContext();
 
@@ -738,7 +739,29 @@ const DUMMY_ORDERS = [
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
   const [orders, setOrders] = useState(DUMMY_ORDERS);
-  const [services] = useState(DEMO_SERVICES);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch services from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const response = await getAllServices();
+        // Ensure we have an array of services
+        const servicesList = Array.isArray(response.data) ? response.data : [];
+        setServices(servicesList);
+      } catch (error) {
+        console.error('Error fetching services from API:', error);
+        // Fall back to empty array if API fails
+        setServices([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   // Load from localStorage
   useEffect(() => {

@@ -6,16 +6,28 @@ const createService = async (req, res) => {
   try {
     const { name, category, description, price, priceType, images, availability } = req.body;
 
+    // Validate user is provider
+    const user = await User.findById(req.userId);
+    if (!user || user.role !== 'provider') {
+      return res.status(403).json({ message: 'Only providers can create services' });
+    }
+
+    // Validate required fields
     if (!name || !category || !description || !price) {
-      return res.status(400).json({ message: 'Please provide all required fields' });
+      return res.status(400).json({ message: 'Please provide all required fields: name, category, description, price' });
+    }
+
+    // Validate price type
+    if (priceType && !['hourly', 'fixed', 'daily'].includes(priceType)) {
+      return res.status(400).json({ message: 'Invalid priceType. Must be: hourly, fixed, or daily' });
     }
 
     const service = new Service({
       name,
       category,
       description,
-      price,
-      priceType,
+      price: parseFloat(price),
+      priceType: priceType || 'fixed',
       images: images || [],
       providerId: req.userId,
       availability: availability || {},
@@ -28,6 +40,7 @@ const createService = async (req, res) => {
       service,
     });
   } catch (error) {
+    console.error('Service creation error:', error);
     res.status(500).json({ message: 'Error creating service', error: error.message });
   }
 };

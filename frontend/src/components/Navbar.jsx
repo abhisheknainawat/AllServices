@@ -41,9 +41,11 @@ function Navbar({ isAuthenticated, userRole, onLogout }) {
             <Link to="/services" className="hover:text-gray-200 transition">
               Services
             </Link>
-            <Link to="/add-service" className="hover:text-gray-200 transition font-semibold text-yellow-200">
-              Add Service
-            </Link>
+            {isAuthenticated && userRole === 'provider' && (
+              <Link to="/add-service" className="hover:text-gray-200 transition font-semibold text-yellow-200">
+                Add Service
+              </Link>
+            )}
             <Link to="/cart" className="flex items-center hover:text-gray-200 transition relative">
               <FiShoppingCart className="text-xl" />
               {cartCount > 0 && (
@@ -118,13 +120,15 @@ function Navbar({ isAuthenticated, userRole, onLogout }) {
             >
               Services
             </Link>
-            <Link
-              to="/add-service"
-              className="block hover:text-gray-200 font-semibold text-yellow-200"
-              onClick={() => setIsOpen(false)}
-            >
-              Add Service
-            </Link>
+            {isAuthenticated && userRole === 'provider' && (
+              <Link
+                to="/add-service"
+                className="block hover:text-gray-200 font-semibold text-yellow-200"
+                onClick={() => setIsOpen(false)}
+              >
+                Add Service
+              </Link>
+            )}
             <Link
               to="/cart"
               className="flex items-center hover:text-gray-200 relative"

@@ -11,6 +11,8 @@ function ServiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [hours, setHours] = useState(1);
   const [added, setAdded] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactMessage, setContactMessage] = useState('');
 
   // Demo reviews data
   const demoReviews = [
@@ -52,6 +54,17 @@ function ServiceDetailPage() {
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
     }
+  };
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    if (!contactMessage.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+    alert(`Message sent to ${service.providerId?.name || 'provider'}: "${contactMessage}"`);
+    setContactMessage('');
+    setShowContactForm(false);
   };
 
   if (loading) {
@@ -184,7 +197,9 @@ function ServiceDetailPage() {
                     <span className="text-sm text-gray-600 font-semibold">{service.rating.toFixed(1)} rating</span>
                   </div>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center gap-2">
+                <button 
+                  onClick={() => setShowContactForm(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center gap-2">
                   <FiMessageSquare /> Contact
                 </button>
               </div>
@@ -280,6 +295,54 @@ function ServiceDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Contact Modal */}
+        {showContactForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="p-6 border-b">
+                <h3 className="text-xl font-bold">Contact Provider</h3>
+              </div>
+              <form onSubmit={handleContactSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Service</label>
+                  <input 
+                    type="text" 
+                    value={service.name} 
+                    disabled 
+                    className="w-full px-3 py-2 border rounded-lg bg-gray-50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Message *</label>
+                  <textarea 
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder="Write your message here..."
+                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="4"
+                    required
+                  />
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setShowContactForm(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold"
+                  >
+                    Send Message
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
